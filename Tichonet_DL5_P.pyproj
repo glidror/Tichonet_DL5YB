@@ -1,0 +1,132 @@
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>348bde95-e5b2-4ac0-9765-d1143c15ac6b</ProjectGuid>
+    <ProjectHome>.</ProjectHome>
+    <StartupFile>Tichonet_DL5_P_3150_Ex3.py</StartupFile>
+    <SearchPath>
+    </SearchPath>
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <Name>Tichonet_DL5_P</Name>
+    <RootNamespace>Tichonet_DL5_P</RootNamespace>
+    <SuppressEnvironmentCreationPrompt>True</SuppressEnvironmentCreationPrompt>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="3150 test\DL1 %282%29.py" />
+    <Compile Include="3150 test\positron.py" />
+    <Compile Include="3150 test\PositronClass.py" />
+    <Compile Include="DL1.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MyVector.py" />
+    <Compile Include="MyVector_prev - Copy.py" />
+    <Compile Include="MyPerceptron.py" />
+    <Compile Include="Tichonet_DL5_P_3030_Ex0.py" />
+    <Compile Include="Tichonet_DL5_P_3150_Ex2.py" />
+    <Compile Include="Tichonet_DL5_P_3150_Ex3.py" />
+    <Compile Include="Tichonet_DL5_P_3150_Ex1.py" />
+    <Compile Include="Tichonet_DL5_P_3140_Ex1.py" />
+    <Compile Include="Tichonet_DL5_P_3130_Ex2.py" />
+    <Compile Include="Tichonet_DL5_P_3130_Ex1.py" />
+    <Compile Include="Tichonet_DL5_P_3120_Ex2.py" />
+    <Compile Include="Tichonet_DL5_P_3120_Ex1.py" />
+    <Compile Include="Tichonet_DL5_P_3040_Ex5.py" />
+    <Compile Include="Tichonet_DL5_P_3040_Ex4.py" />
+    <Compile Include="Tichonet_DL5_P_3040_Ex3.py" />
+    <Compile Include="Tichonet_DL5_P_3040_Ex2.py" />
+    <Compile Include="Tichonet_DL5_P_3040_Ex0.py" />
+    <Compile Include="Tichonet_DL5_P_3030_Ex6.py" />
+    <Compile Include="Tichonet_DL5_P_3030_Ex5.py" />
+    <Compile Include="Tichonet_DL5_P_3030_Ex4.py" />
+    <Compile Include="Tichonet_DL5_P_3030_Ex3.py" />
+    <Compile Include="Tichonet_DL5_P_3030_Ex2.py" />
+    <Compile Include="Tichonet_DL5_P_3030_MyVector.py" />
+    <Compile Include="Tichonet_DL5_P_3030_Ex1.py" />
+    <Compile Include="unit10\b_utils.py" />
+    <Compile Include="unit10\c1w2_utils.py" />
+    <Compile Include="unit10\c1w3_utils.py" />
+    <Compile Include="unit10\c1w4_utils.py" />
+    <Compile Include="unit10\c1w5_utils.py" />
+    <Compile Include="unit10\c2w1_init_utils.py" />
+    <Compile Include="unit10\c2w1_testCases.py" />
+    <Compile Include="unit10\c2w1_utils.py" />
+    <Compile Include="unit10\c2w2_utils.py" />
+    <Compile Include="unit10\c2w3_tf_utils.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="data\images\cat.4001.jpg" />
+    <Content Include="data\images\cat.4002.jpg" />
+    <Content Include="data\images\cat.4003.jpg" />
+    <Content Include="data\images\cat.4004.jpg" />
+    <Content Include="data\images\cat.4005.jpg" />
+    <Content Include="data\images\cat.4006.jpg" />
+    <Content Include="data\images\cat.4007.jpg" />
+    <Content Include="data\images\cat.4008.jpg" />
+    <Content Include="data\images\cat.4009.jpg" />
+    <Content Include="data\images\cat.4010.jpg" />
+    <Content Include="data\images\cat.4011.jpg" />
+    <Content Include="data\images\cat.4012.jpg" />
+    <Content Include="data\images\cat.4013.jpg" />
+    <Content Include="data\images\cat.4014.jpg" />
+    <Content Include="data\images\dog.4001.jpg" />
+    <Content Include="data\images\dog.4002.jpg" />
+    <Content Include="data\images\dog.4003.jpg" />
+    <Content Include="data\images\dog.4004.jpg" />
+    <Content Include="data\images\dog.4005.jpg" />
+    <Content Include="data\images\dog.4006.jpg" />
+    <Content Include="data\images\dog.4007.jpg" />
+    <Content Include="data\images\dog.4008.jpg" />
+    <Content Include="data\images\dog.4009.jpg" />
+    <Content Include="data\images\dog.4010.jpg" />
+    <Content Include="data\images\dog.4011.jpg" />
+    <Content Include="data\images\dog.4012.jpg" />
+    <Content Include="data\images\dog.4013.jpg" />
+    <Content Include="data\images\dog.4014.jpg" />
+    <Content Include="requirements.txt" />
+    <Content Include="unit10\dataB1W3Ex2.xlsx" />
+    <Content Include="unit10\datasets\cat_nocat\test_catvnoncat.h5" />
+    <Content Include="unit10\datasets\cat_nocat\train_catvnoncat.h5" />
+    <Content Include="unit10\datasets\data.mat" />
+    <Content Include="unit10\Raccoon.png" />
+    <Content Include="unit10\trainN - Sample-data-sets-for-linear-regression1.xlsx" />
+    <Content Include="unit10\__pycache__\b_utils.cpython-39.pyc" />
+    <Content Include="unit10\__pycache__\c1w2_utils.cpython-36.pyc" />
+    <Content Include="unit10\__pycache__\c1w3_utils.cpython-36.pyc" />
+    <Content Include="unit10\__pycache__\c1w4_utils.cpython-36.pyc" />
+    <Content Include="unit10\__pycache__\c2w1_init_utils.cpython-36.pyc" />
+    <Content Include="unit10\__pycache__\c2w1_reg_utils.cpython-36.pyc" />
+    <Content Include="unit10\__pycache__\c2w1_testCases.cpython-36.pyc" />
+    <Content Include="unit10\__pycache__\c2w1_utils.cpython-36.pyc" />
+    <Content Include="unit10\__pycache__\c2w2_opt_utils.cpython-36.pyc" />
+    <Content Include="unit10\__pycache__\c2w2_testCases.cpython-36.pyc" />
+    <Content Include="unit10\__pycache__\c2w2_utils.cpython-36.pyc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="data\" />
+    <Folder Include="data\images\" />
+    <Folder Include="3150 test\" />
+    <Folder Include="unit10\" />
+    <Folder Include="unit10\datasets\" />
+    <Folder Include="unit10\datasets\cat_nocat\" />
+    <Folder Include="unit10\__pycache__\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
+  <!-- Uncomment the CoreCompile target to enable the Build command in
+       Visual Studio and specify your pre- and post-build commands in
+       the BeforeBuild and AfterBuild targets below. -->
+  <!--<Target Name="CoreCompile" />-->
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+</Project>

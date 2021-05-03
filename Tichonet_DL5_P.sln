@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31205.134
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "Tichonet_DL5_P", "Tichonet_DL5_P.pyproj", "{348BDE95-E5B2-4AC0-9765-D1143C15AC6B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{348BDE95-E5B2-4AC0-9765-D1143C15AC6B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{348BDE95-E5B2-4AC0-9765-D1143C15AC6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0590A24B-4C10-4122-BB0E-D56E6F93F65A}
+	EndGlobalSection
+EndGlobal
