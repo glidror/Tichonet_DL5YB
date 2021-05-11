@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>348bde95-e5b2-4ac0-9765-d1143c15ac6b</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>Tichonet_DL5_P_3150_Ex3.py</StartupFile>
+    <StartupFile>Tichonet_DL5_P_3170_2.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -22,18 +22,18 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="3150 test\DL1 %282%29.py" />
-    <Compile Include="3150 test\positron.py" />
-    <Compile Include="3150 test\PositronClass.py" />
+    <Compile Include="3150 test\DL1.py" />
     <Compile Include="DL1.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="MyVector.py" />
-    <Compile Include="MyVector_prev - Copy.py" />
     <Compile Include="MyPerceptron.py" />
     <Compile Include="Tichonet_DL5_P_3030_Ex0.py" />
     <Compile Include="Tichonet_DL5_P_3150_Ex2.py" />
+    <Compile Include="3150 test\main.py" />
     <Compile Include="Tichonet_DL5_P_3150_Ex3.py" />
+    <Compile Include="Tichonet_DL5_P_3170_2.py" />
+    <Compile Include="Tichonet_DL5_P_3170_1.py" />
     <Compile Include="Tichonet_DL5_P_3150_Ex1.py" />
     <Compile Include="Tichonet_DL5_P_3140_Ex1.py" />
     <Compile Include="Tichonet_DL5_P_3130_Ex2.py" />

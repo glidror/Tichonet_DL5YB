@@ -1,5 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import os
+import h5py
+
 
 
 class DLModel:
@@ -113,7 +116,7 @@ class DLLayer:
             self.adaptive_switch = 0.5
  
         # parameters
-        self.random_scale = 0.01
+        self.random_scale = 0.1
         self.init_weights(W_initialization)
 
         # activation methods
@@ -149,7 +152,18 @@ class DLLayer:
             self.W = np.full(self._get_W_shape(), self.alpha)
         elif W_initialization == "random":
             self.W = np.random.randn(*self._get_W_shape()) * self.random_scale
-
+        elif W_initialization == "He":
+            self.W = np.random.randn(*self._get_W_shape()) * np.sqrt(2.0/sum(self._input_shape))
+        elif W_initialization == "Xaviar":
+            self.W = np.random.randn(*self._get_W_shape()) * np.sqrt(1.0/sum(self._input_shape))
+        else:
+            try:
+                with h5py.File(W_initialization, 'r') as hf:
+                    self.W = hf['W'][:]
+                    self.b = hf['b'][:]
+            except (FileNotFoundError):
+                raise NotImplementedError("Unrecognized initialization:", W_initialization)
+            
 
     def __str__(self):
         s = self.name + " Layer:\n"
@@ -266,4 +280,11 @@ class DLLayer:
             self.W -= self.alpha * self.dW                               
             self.b -= self.alpha * self.db
 
+    def save_weights(self,path,file_name):
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+        with h5py.File(path+"/"+file_name+'.h5', 'w') as hf:
+            hf.create_dataset("W",  data=self.W)
+            hf.create_dataset("b",  data=self.b)
 

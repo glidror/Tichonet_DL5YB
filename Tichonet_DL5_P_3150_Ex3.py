@@ -8,7 +8,6 @@ from DL1 import *
 
 np.random.seed(1)
 
-"""
 ## Targil 3150 - 3.0
 print ("------------------------------------------------------------------")
 print ("Targil 3150 - 3 - HIMUM")
@@ -99,8 +98,6 @@ predictions = model.predict(X)
 print ('Accuracy: %d' % float((np.dot(Y,predictions.T) + np.dot(1-Y,1-predictions.T))/float(Y.size)*100) + '%')
 
 
-"""
-
 ## Targil 3150 - 3.4 
 print ("------------------------------------------------------------------")
 print ("Targil 3150 - 3.4")
@@ -118,11 +115,11 @@ if dataset == "blobs":
     Y = Y%2
 
 model = DLModel();
-model.add(DLLayer("Perseptrons 1", 6,(2,),"tanh","random", 0.01, 'adaptive'))
-model.add(DLLayer("Perseptrons 2", 1,(6,),"sigmoid", "random", 0.01, 'adaptive'))
+model.add(DLLayer("Perseptrons 1", 4,(2,),"tanh","random", 0.01, 'adaptive'))
+model.add(DLLayer("Perseptrons 2", 1,(4,),"sigmoid", "random", 0.01, 'adaptive'))
 model.compile("cross_entropy", 0.5)
 
-costs = model.train(X,Y,25000)
+costs = model.train(X,Y,10000)
 plt.plot(np.squeeze(costs))
 plt.ylabel('cost')
 plt.show()
