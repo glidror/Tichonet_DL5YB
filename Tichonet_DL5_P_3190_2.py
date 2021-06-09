@@ -119,3 +119,5 @@ my_label_y = np.reshape(my_label_y,(10,1))
 my_image = my_image / 255.0 -0.5  # normelize
 p = predict(my_image)
 print (p)
+
+
