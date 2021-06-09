@@ -95,7 +95,7 @@ class DLModel:
             self.layers[i].save_weights(path,"Layer"+str(i))
 
 class DLLayer:
-    def __init__(self, name, num_units, input_shape, activation="relu", W_initialization="random", learning_rate = 1.2, optimization=None): 
+    def __init__(self, name, num_units, input_shape, activation="relu", W_initialization="random", learning_rate = 0.01, optimization=None): 
         self._num_units = num_units
         self._activation = activation
         self._input_shape = input_shape
@@ -116,7 +116,7 @@ class DLLayer:
             self.adaptive_switch = 0.5
  
         # parameters
-        self.random_scale = 0.1
+        self.random_scale = 0.01
         self.init_weights(W_initialization)
 
         # activation methods

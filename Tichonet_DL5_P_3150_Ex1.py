@@ -15,9 +15,9 @@ print(l[1])
 l.append(DLLayer("Hidden 2", 12, (6,),"leaky_relu", "random", 0.5,"adaptive"))
 l[2].adaptive_cont = 1.2
 print(l[2])
-l.append(DLLayer("Neurons 3",16, (12,),"tanh"))
+l.append(DLLayer("Hidden 3",16, (12,),"tanh"))
 print(l[3])
-l.append(DLLayer("Neurons 4",3, (16,),"sigmoid", "random", 0.2, "adaptive"))
+l.append(DLLayer("output 4",3, (16,),"sigmoid", "random", 0.2, "adaptive"))
 l[4].random_scale = 10.0
 l[4].init_weights("random")
 print(l[4])
@@ -46,7 +46,7 @@ for i in range(1, len(l)):
 
 
 print ("------------------------------------------------------------------")
-print  ("Targil 3150 - 1.5")
+print ("Targil 3150 - 1.4")
 print ("------------------------------------------------------------------")
 ## Targil 3150 - 1.4
 Al = X
@@ -80,17 +80,16 @@ print ("------------------------------------------------------------------")
 print ("Targil 3150 - 1.6")
 print ("------------------------------------------------------------------")
 np.random.seed(4)
-random.seed(4)
 l1 = DLLayer("Hidden1", 3, (4,),"trim_sigmoid", "zeros", 0.2, "adaptive")
 l2 = DLLayer("Hidden2", 2, (3,),"relu", "random", 1.5)
 
 print("before update:W1\n"+str(l1.W)+"\nb1.T:\n"+str(l1.b.T))
 print("W2\n"+str(l2.W)+"\nb2.T:\n"+str(l2.b.T))
 
-l1.dW = np.random.randn(3,4) * random.randrange(-100,100)
-l1.db = np.random.randn(3,1) * random.randrange(-100,100)
-l2.dW = np.random.randn(2,3) * random.randrange(-100,100)
-l2.db = np.random.randn(2,1) * random.randrange(-100,100)
+l1.dW = np.random.randn(3,4) * random.randint(-100,100)
+l1.db = np.random.randn(3,1) * random.randint(-100,100)
+l2.dW = np.random.randn(2,3) * random.randint(-100,100)
+l2.db = np.random.randn(2,1) * random.randint(-100,100)
 l1.update_parameters()
 l2.update_parameters()
 print("after update:W1\n"+str(l1.W)+"\nb1.T:\n"+str(l1.b.T))
