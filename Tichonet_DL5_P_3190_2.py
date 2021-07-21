@@ -11,7 +11,7 @@ from DL3 import *
 
 ## Targil 3190 - 2.1
 print ("------------------------------------------------------------------")
-print ("Targil 3190 - 2.1")
+print ("Targil 3190 - 2.1 - Getting MNist. Might take time... ")
 print ("------------------------------------------------------------------")
 mnist = fetch_openml('mnist_784')
 X, Y = mnist["data"], mnist["target"]
@@ -90,13 +90,15 @@ print ("------------------------------------------------------------------")
 print ("Targil 3190 - 2.5")
 print ("------------------------------------------------------------------")
 print('Deep train accuracy')
-model.confusion_matrix(X_train, Y_train)
+cf_train = model.confusion_matrix(X_train, Y_train)
 print('Deep test accuracy')
-model.confusion_matrix(X_test, Y_test)
+cf_test = model.confusion_matrix(X_test, Y_test)
 
+# To check prediction accuracy for each number we should devide the right answers to the total prediction of this digit
+# for example - the didigt 4
 i=4
-#print('train',str(i),str(pred_train[i][i]/np.sum(pred_train[:,i])))
-#print('test',str(i),str(pred_test[i][i]/np.sum(pred_test[:,i])))
+print('train',str(i),str(cf_train[i][i]/np.sum(cf_train[:,i])))
+print('test' ,str(i),str(cf_test [i][i]/np.sum(cf_test [:,i])))
 
 ## Targil 3190 - 2.6
 print ("------------------------------------------------------------------")
@@ -105,7 +107,7 @@ print ("------------------------------------------------------------------")
 from PIL import Image, ImageOps
 #Test your image
 num_px = 28
-img_path = r'data\images\three.jpg'
+img_path = r'data\images\Num3.jpg'
 my_label_y = [0,0,0,1,0,0,0,0,0,0] # change the 1’s position to fit image
 image = Image.open(img_path)
 image28 = image.resize((num_px, num_px), Image.ANTIALIAS) # resize to 28X28 
@@ -117,7 +119,7 @@ gray_image = ImageOps.grayscale(image28)	# grayscale – to fit to training data
 my_image = np.reshape(gray_image,(num_px*num_px,1))
 my_label_y = np.reshape(my_label_y,(10,1))	
 my_image = my_image / 255.0 -0.5  # normelize
-p = predict(my_image)
+p = model.predict(my_image)
 print (p)
 
 

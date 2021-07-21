@@ -67,6 +67,7 @@
     <Compile Include="unit10\c2w3_tf_utils.py" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="data\images\Num3.jpg" />
     <Content Include="data\images\three.jpg" />
     <Content Include="data\images\cat.4001.jpg" />
     <Content Include="data\images\cat.4002.jpg" />

@@ -131,7 +131,9 @@ class DLModel:
         Y_index = np.argmax(Y, axis=0)
         right = np.sum(prediction_index == Y_index)
         print("accuracy: ",str(right/len(Y[0])))
-        print(confusion_matrix(prediction_index, Y_index))
+        cf = confusion_matrix(prediction_index, Y_index)
+        print(cf)
+        return cf
 
 
 class DLLayer:
