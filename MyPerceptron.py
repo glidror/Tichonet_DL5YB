@@ -41,7 +41,7 @@ class MyPerceptron(object):
     # linear analyzis routines
     # --------------------------------------------------
 
-    # forward propegation - calculate the value of the avaerage cost function for the whole set of samples X
+    # forward propagation - calculate the value of the avaerage cost function for the whole set of samples X
     # compared to the expected result Y, using the set of parameters W and b
     def forward_propagation(self):
         #m = self.X.shape[1]
@@ -51,7 +51,7 @@ class MyPerceptron(object):
         J = np.squeeze(J)
         return A, J
 
-    # Backword propegation - calculate the values of the difference dW and db
+    # Backword propagation - calculate the values of the difference dW and db
     # for a samples (X), with expected results Y and calculated results A
     def backward_propagation(self, A):
         #m = self.X.shape[1]

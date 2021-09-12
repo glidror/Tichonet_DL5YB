@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>348bde95-e5b2-4ac0-9765-d1143c15ac6b</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>Tichonet_DL5_P_3190_2.py</StartupFile>
+    <StartupFile>Ehud_03.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -23,16 +23,23 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="DL6.py" />
+    <Compile Include="DL5.py" />
+    <Compile Include="DL4.py" />
     <Compile Include="DL3.py" />
     <Compile Include="DL1.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="DL9.py" />
+    <Compile Include="Ehud_03.py" />
+    <Compile Include="Ehud_02.py" />
     <Compile Include="MyVector.py" />
     <Compile Include="MyPerceptron.py" />
     <Compile Include="Tichonet_DL5_P_3030_Ex0.py" />
     <Compile Include="Tichonet_DL5_P_3150_Ex2.py" />
     <Compile Include="3150 test\main.py" />
     <Compile Include="Tichonet_DL5_P_3150_Ex3.py" />
+    <Compile Include="Ehud_01.py" />
     <Compile Include="Tichonet_DL5_P_3190_2.py" />
     <Compile Include="Tichonet_DL5_P_3190_1.py" />
     <Compile Include="Tichonet_DL5_P_3170_2.py" />
@@ -55,16 +62,10 @@
     <Compile Include="Tichonet_DL5_P_3030_Ex2.py" />
     <Compile Include="Tichonet_DL5_P_3030_MyVector.py" />
     <Compile Include="Tichonet_DL5_P_3030_Ex1.py" />
-    <Compile Include="unit10\b_utils.py" />
-    <Compile Include="unit10\c1w2_utils.py" />
-    <Compile Include="unit10\c1w3_utils.py" />
-    <Compile Include="unit10\c1w4_utils.py" />
-    <Compile Include="unit10\c1w5_utils.py" />
-    <Compile Include="unit10\c2w1_init_utils.py" />
-    <Compile Include="unit10\c2w1_testCases.py" />
-    <Compile Include="unit10\c2w1_utils.py" />
-    <Compile Include="unit10\c2w2_utils.py" />
-    <Compile Include="unit10\c2w3_tf_utils.py" />
+    <Compile Include="unit10\c4w3_yolo3_utils.py" />
+    <Compile Include="unit10\c4w4_facenet_utils.py" />
+    <Compile Include="unit10\c4w4_style_transfer_utils.py" />
+    <Compile Include="unit10\utils.py" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="data\images\Num3.jpg" />
@@ -98,23 +99,10 @@
     <Content Include="data\images\dog.4013.jpg" />
     <Content Include="data\images\dog.4014.jpg" />
     <Content Include="requirements.txt" />
-    <Content Include="unit10\dataB1W3Ex2.xlsx" />
     <Content Include="unit10\datasets\cat_nocat\test_catvnoncat.h5" />
     <Content Include="unit10\datasets\cat_nocat\train_catvnoncat.h5" />
     <Content Include="unit10\datasets\data.mat" />
-    <Content Include="unit10\Raccoon.png" />
-    <Content Include="unit10\trainN - Sample-data-sets-for-linear-regression1.xlsx" />
-    <Content Include="unit10\__pycache__\b_utils.cpython-39.pyc" />
-    <Content Include="unit10\__pycache__\c1w2_utils.cpython-36.pyc" />
-    <Content Include="unit10\__pycache__\c1w3_utils.cpython-36.pyc" />
-    <Content Include="unit10\__pycache__\c1w4_utils.cpython-36.pyc" />
-    <Content Include="unit10\__pycache__\c2w1_init_utils.cpython-36.pyc" />
-    <Content Include="unit10\__pycache__\c2w1_reg_utils.cpython-36.pyc" />
-    <Content Include="unit10\__pycache__\c2w1_testCases.cpython-36.pyc" />
-    <Content Include="unit10\__pycache__\c2w1_utils.cpython-36.pyc" />
-    <Content Include="unit10\__pycache__\c2w2_opt_utils.cpython-36.pyc" />
-    <Content Include="unit10\__pycache__\c2w2_testCases.cpython-36.pyc" />
-    <Content Include="unit10\__pycache__\c2w2_utils.cpython-36.pyc" />
+    <Content Include="unit10\__pycache__\utils.cpython-36.pyc" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="data\" />
