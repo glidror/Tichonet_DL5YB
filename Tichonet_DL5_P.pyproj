@@ -37,7 +37,6 @@
     <Compile Include="MyPerceptron.py" />
     <Compile Include="Tichonet_DL5_P_3030_Ex0.py" />
     <Compile Include="Tichonet_DL5_P_3150_Ex2.py" />
-    <Compile Include="3150 test\main.py" />
     <Compile Include="Tichonet_DL5_P_3150_Ex3.py" />
     <Compile Include="Ehud_01.py" />
     <Compile Include="Tichonet_DL5_P_3190_2.py" />
@@ -107,7 +106,6 @@
   <ItemGroup>
     <Folder Include="data\" />
     <Folder Include="data\images\" />
-    <Folder Include="3150 test\" />
     <Folder Include="unit10\" />
     <Folder Include="unit10\datasets\" />
     <Folder Include="unit10\datasets\cat_nocat\" />
