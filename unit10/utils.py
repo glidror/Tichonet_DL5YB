@@ -255,6 +255,15 @@ def load_extra_datasets():
 
     return noisy_circles, noisy_moons, blobs, gaussian_quantiles, no_structure
 
+def load_moons(N=300,noise=0.2):
+    train_X, train_Y = sklearn.datasets.make_moons(n_samples=N, noise=noise)
+    plt.scatter(train_X[:, 0], train_X[:, 1], c=train_Y, s=40, cmap=plt.cm.Spectral);
+    plt.show() 
+    train_X = train_X.T
+    train_Y = train_Y.reshape((1, train_Y.shape[0]))
+    
+    return train_X, train_Y
+
 def load_datasetC1W4():
     np.random.seed(1)
     train_X, train_Y = sklearn.datasets.make_circles(n_samples=300, noise=.05)
@@ -334,3 +343,34 @@ def print_costs(costs, num_iterations):
     plt.ylabel('cost')
     plt.xlabel(f'iterations (per {num_iterations//100})')
     plt.show()
+
+    
+def update_parameters_with_adam_test_case():
+    np.random.seed(1)
+    v, s = ({'dW1': np.array([[ 0.,  0.,  0.],
+         [ 0.,  0.,  0.]]), 'dW2': np.array([[ 0.,  0.,  0.],
+         [ 0.,  0.,  0.],
+         [ 0.,  0.,  0.]]), 'db1': np.array([[ 0.],
+         [ 0.]]), 'db2': np.array([[ 0.],
+         [ 0.],
+         [ 0.]])}, {'dW1': np.array([[ 0.,  0.,  0.],
+         [ 0.,  0.,  0.]]), 'dW2': np.array([[ 0.,  0.,  0.],
+         [ 0.,  0.,  0.],
+         [ 0.,  0.,  0.]]), 'db1': np.array([[ 0.],
+         [ 0.]]), 'db2': np.array([[ 0.],
+         [ 0.],
+         [ 0.]])})
+    W1 = np.random.randn(2,3)
+    b1 = np.random.randn(2,1)
+    W2 = np.random.randn(3,3)
+    b2 = np.random.randn(3,1)
+
+    dW1 = np.random.randn(2,3)
+    db1 = np.random.randn(2,1)
+    dW2 = np.random.randn(3,3)
+    db2 = np.random.randn(3,1)
+    
+    parameters = {"W1": W1, "b1": b1, "W2": W2, "b2": b2}
+    grads = {"dW1": dW1, "db1": db1, "dW2": dW2, "db2": db2}
+    
+    return parameters, grads, v, s
