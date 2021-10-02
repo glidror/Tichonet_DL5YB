@@ -164,6 +164,7 @@ class DLModel:
             self.layers[l].update_parameters()                  # Update parameters
         return dAl_t
 
+
     # =================== Main Train Function ======================
     # Get the X , Y , num_epocs (num of iterations), mini_batch_zise (supports also mini batch algorithm)
     # Note: use different seeds for mini batch random grouping (batches) of the total samples

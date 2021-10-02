@@ -165,36 +165,31 @@ class DLModel:
         return dAl_t
 
     # =================== Main Train Function ======================
-    # Get the X , Y , num_epocs (num of iterations), mini_batch_zise (supports also mini batch algorithm)
+    # Get the X , Y , num of iterations, mini_batch_zise (supports also mini batch algorithm)
     # Note: use different seeds for mini batch random grouping (batches) of the total samples
-    def train(self, X, Y, num_epocs, mini_batch_size=64):
+    def train(self, X, Y, num_iterations):
         self.set_train(True)
-        print_ind = max(num_epocs // 100, 1)
+        print_ind = max(num_iterations // 100, 1)
         costs = []      # used to agregate costs during train, for later display
-        seed = 10        # start random seed for the minibatch random permutations
-        for i in range(num_epocs):  # if mini_batch_size is 1 - this is similar to num_of_iterations
-            mini_batches = self.random_mini_batches(X, Y, mini_batch_size, seed)
-            seed +=1                # inc random seed to difrentiat next random_mini_batches
-            
-            for minibatch in mini_batches:
-                # must create a mew copy of the input set because it is altered during the train of hte layers
-                Al_t = np.array(minibatch[0], copy=True)  
-                # forward propagation
-                Al_t = self.forward_propagation (Al_t)
-                #backward propagation and update parameters
-                dAl_t = self.backward_propagation(Al_t, minibatch[1])
+        for i in range(num_iterations):  # if mini_batch_size is 1 - this is similar to num_of_iterations
+            # must create a mew copy of the input set because it is altered during the train of hte layers
+            Al = np.array(X, copy=True)  
+            # forward propagation
+            Al = self.forward_propagation (Al)
+            #backward propagation and update parameters
+            dAl = self.backward_propagation(Al, Y)
 
             # record progress for later printout, and progress printing during long training
-            if (num_epocs == 1 or ( i > 0 and i % print_ind == 0)):
-                J = self.compute_cost(Al_t, minibatch[1])
+            if (num_iterations == 1 or ( i > 0 and i % print_ind == 0)):
+                J = self.compute_cost(Al, Y)
                 costs.append(J)
                 #user defined info
                 inject_string = ""
                 if self.inject_str_func != None:
                     inject_string = self.inject_str_func(self, X, Y, Y_hat)
                 
-                print(f"cost after {i} full updates {100*i/num_epocs}%:{J}" + inject_string)
-        costs.append(self.compute_cost(Al_t, minibatch[1]))
+                print(f"cost after {i} full updates {100*i/num_iterations}%:{J}" + inject_string)
+        costs.append(self.compute_cost(Al, Y))
 
         self.set_train(False)
 
