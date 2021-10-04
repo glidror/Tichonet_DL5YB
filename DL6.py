@@ -274,8 +274,6 @@ class DLModel:
         AL = self.forward_propagation(X)           
         #backward propagation
         self.backward_propagation(AL,Y)
-        #un case the network 
-        ##layers = self.to_layers()
         L = len(self.layers)
         # check gradients of each layer separatly
         for main_l in reversed(range(L)):
@@ -418,12 +416,11 @@ class DLLayer:
         s += "\tinput_shape: (" + str(self._input_shape) + ")\n"
         s += "\tnum_units: " + str(self._num_units) + "\n"
         # parameters
-        s += "\tparameters:\n"
+        s += "\tparameters shape:\n"
         s += "\t\t W shape: " + str(self.W.shape)+"\n"
         s += "\t\t b shape: " + str(self.b.shape) + "\n"
-        s += "activation function: " + self._activation + "\n"
         if self._activation == "leaky_relu":
-            s += "\t\tleaky relu parameters:\n"
+            s += "\tactivation function - leaky_relu , parameters: \n"
             s += "\t\t\tleaky_relu_d: " + str(self.leaky_relu_d)+"\n"
         #optimization
         if self._optimization != None:
@@ -434,14 +431,15 @@ class DLLayer:
                 s += "\t\t\tswitch: " + str(self.adaptive_switch)+"\n"
         s += self.regularization_str()
         return s;
+
     def regularization_str(self) :
-        s = "regularization: " + str(self.regularization) + "\n"
+        s = "\tregularization: " + str(self.regularization) + "\n"
         if (self.regularization == "L2"):
-            s += "\tL2 Parameters: \n" 
-            s += "\t\tlambda: " + str(self.L2_lambda) + "\n"
+            s += "\t\tL2 Parameters: \n" 
+            s += "\t\t\tlambda: " + str(self.L2_lambda) + "\n"
         elif (self.regularization == "dropout"):
-            s += "\tdropout Parameters: \n"
-            s += "\t\tkeep prob: " + str(self.dropout_keep_prob) + "\n"
+            s += "\t\tdropout Parameters: \n"
+            s += "\t\t\tkeep prob: " + str(self.dropout_keep_prob) + "\n"
         return s
 
     # Service routinse
@@ -601,8 +599,8 @@ class DLLayer:
         m = self._A_prev.shape[1]
         dZ = self.activation_backward(dA) 
 
-        db_m_values = dZ * np.full((1,self._A_prev.shape[1]),1)
-        self.db = (1.0/m) * np.sum(db_m_values, keepdims=True, axis=1)
+        ##db_m_values = dZ * np.full((1,self._A_prev.shape[1]),1)
+        self.db = (1.0/m) * np.sum(dZ, keepdims=True, axis=1)
 
         self.dW = (1.0/m) * (dZ @ self._A_prev.T) 
         if self.regularization == 'L2':
@@ -705,64 +703,61 @@ class DLConv (DLLayer):
     def _get_W_init_factor(self):
         return (self._input_shape[0], self.filter_size[0], self.filter_size[1])
 
-    def im2col_indices(A, filter_height=3, filter_width=3, padding=(1,1),stride=(1,1)):
-        """ An implementation of im2col based on some fancy indexing """
+    def im2col_indices(A, filter_size = (3,3), padding=(1,1),stride=(1,1)):
+        """ An implementation of im2col based on some fancy indexing """  
         # Zero-pad the input
-        A_padded = np.pad(A, ((0, 0), (0, 0), (padding[0], padding[1]), (padding[0], padding[1])), mode='constant')
+        A_padded = np.pad(A, ((0, 0), (0, 0), (padding[0], padding[1]), (padding[0], padding[1])), mode='constant', constant_values=(0,0))
 
-        k, i, j = DLConv.get_im2col_indices(A.shape, filter_height, filter_width, padding, stride)
+        k, i, j = DLConv.get_im2col_indices(A.shape, filter_size, padding, stride)
 
         cols = A_padded[:, k, i, j]
         C = A.shape[1]
-        cols = cols.transpose(1, 2, 0).reshape(filter_height * filter_width * C, -1)
+        cols = cols.transpose(1, 2, 0).reshape(filter_size[0] * filter_size[1] * C, -1)
         return cols
 
-    def get_im2col_indices(A_shape, filter_height=3, filter_width=3, padding=(1,1),stride=(1,1)):
+    def get_im2col_indices(A_shape, filter_size=(3,3), padding=(1,1),stride=(1,1)):
         # First figure out what the size of the output should be
         m, C, H, W = A_shape
-        #assert (H + 2 * padding[0] - filter_height) % stride[0] == 0
-        #assert (W + 2 * padding[1] - filter_width) % stride[1] == 0
-        out_height = int((H + 2 * padding[0] - filter_height) / stride[0]) + 1
-        out_width = int((W + 2 * padding[1] - filter_width) / stride[1]) + 1
+        out_height = int((H + 2 * padding[0] - filter_size[0]) / stride[0]) + 1
+        out_width = int((W + 2 * padding[1] - filter_size[1]) / stride[1]) + 1
 
-        i0 = np.repeat(np.arange(filter_height), filter_width)
+        i0 = np.repeat(np.arange(filter_size[0]), filter_size[1])
         i0 = np.tile(i0, C)
         i1 = stride[0] * np.repeat(np.arange(out_height), out_width)
-        j0 = np.tile(np.arange(filter_width), filter_height * C)
+        j0 = np.tile(np.arange(filter_size[1]), filter_size[0] * C)
         j1 = stride[1] * np.tile(np.arange(out_width), out_height)
         i = i0.reshape(-1, 1) + i1.reshape(1, -1)
         j = j0.reshape(-1, 1) + j1.reshape(1, -1)
 
-        k = np.repeat(np.arange(C), filter_height * filter_width).reshape(-1, 1)
+        k = np.repeat(np.arange(C), filter_size[0] * filter_size[1]).reshape(-1, 1)
 
         return (k, i, j)
 
 
     @staticmethod
     def forward_propagation(self, prev_A):
+        # move the samples dimention (last in our implementation), to be the firs (usualy we mark this size as m)
+        # other three diemntions are C, H, W
         prev_A = np.transpose(prev_A, (3,0,1,2))
-        prev_A  = DLConv.im2col_indices(prev_A, self.filter_size[0], self.filter_size[1], self.padding, self.strides)
+        prev_A  = DLConv.im2col_indices(prev_A, self.filter_size, self.padding, self.strides)
+
         SaveW = self.W
-
-        self.W = self.W.reshape(self.num_filters, -1)
-
-        Z = DLLayer.forward_propagation(self, prev_A)
-
-        Z = Z.reshape(self.num_filters, self.h_out, self.w_out, -1) 
+        self.W = self.W.reshape(self.num_filters, -1)   # Set W to match the dimentions of prev_A
+        A = DLLayer.forward_propagation(self, prev_A)   # now we can use the regular forward propegatino of the layer
+        A = A.reshape(self.num_filters, self.h_out, self.w_out, -1) # replace back the result shape
 
         self.W = SaveW
-
-        return Z
+        return A
 
 
     @staticmethod
-    def col2im_indices(cols, A_shape, filter_height=3, filter_width=3, padding=(1,1),stride=(1,1)):
+    def col2im_indices(cols, A_shape, filter_size=(3,3), padding=(1,1),stride=(1,1)):
         """ An implementation of col2im based on fancy indexing and np.add.at """
         m, C, H, W = A_shape
         H_padded, W_padded = H + 2 * padding[0], W + 2 * padding[1]
         A_padded = np.zeros((m, C, H_padded, W_padded), dtype=cols.dtype)
-        k, i, j = DLConv.get_im2col_indices(A_shape, filter_height, filter_width, padding, stride)
-        cols_reshaped = cols.reshape(C * filter_height * filter_width, -1, m)
+        k, i, j = DLConv.get_im2col_indices(A_shape, filter_size, padding, stride)
+        cols_reshaped = cols.reshape(C * filter_size[0] * filter_size[1], -1, m)
         cols_reshaped = cols_reshaped.transpose(2, 0, 1)
         np.add.at(A_padded, (slice(None), k, i, j), cols_reshaped)
         if padding[0] == 0 and padding[1] == 0:
@@ -776,35 +771,24 @@ class DLConv (DLLayer):
 
     @staticmethod
     def backward_propagation(self, dA):
-        m = self._A_prev.shape[1]
-        dA = dA.reshape(self.num_filters, -1)
-
-        dZ = self.activation_backward(dA) 
-
-        m = dZ.shape[-1]
-
+        m = dA.shape[-1]
         SaveW = self.W
-        dZ = dZ.reshape(self.num_filters, -1)
+
+        dA = dA.reshape(self.num_filters, -1)
         self.W = self.W.reshape(self.num_filters, -1)
 
-        self.db = (1.0/m) * np.sum(dZ, keepdims=True, axis=1)
-
-        self.dW = (1.0/m) * (dZ @ self._A_prev.T) 
-        if self.regularization == 'L2':
-            self.dW += (self.L2_lambda/m) * self.W
-        dA_prev = self.W.T @ dZ
-        if (self.regularization == "dropout"):
-            dA_prev = self.backward_dropout(dA_prev)
+        dA_Prev = DLLayer.backward_propagation(self, dA)   # now we can use the regular backword propegatino of the layer
 
         self.W = SaveW
-        self.dW  =self.dW .reshape(self.W.shape)
-        ###dA_prev = dA_prev.reshape(self.W.shape)         
+        self.dW  =self.dW.reshape(self.W.shape)
+
         #  m, C, H, W
         prev_A_shape = (m, *self._input_shape)
-        dA_prev = DLConv.col2im_indices(dA_prev, prev_A_shape, self.filter_size[0], self.filter_size[1], self.padding, self.strides)
+        dA_Prev = DLConv.col2im_indices(dA_Prev, prev_A_shape, self.filter_size, self.padding, self.strides)
+
         # transpose dA-prev from (m,C,H,W) to (C,H,W,m)
-        dA_prev = dA_prev.transpose(1,2,3,0)
-        return dA_prev
+        dA_Prev = dA_Prev.transpose(1,2,3,0)
+        return dA_Prev
 
     def parms_to_vec(self):
         return np.concatenate((np.reshape(self.W,(-1,)), np.reshape(self.b, (-1,))), axis=0)
@@ -851,7 +835,7 @@ class DLMaxpooling ():
         prev_A = prev_A.transpose(3, 0, 1, 2)
         m,C,H,W = prev_A.shape
         prev_A = prev_A.reshape(m*C,1,H,W)
-        self.prev_A = DLConv.im2col_indices(prev_A, self.filter_size[0], self.filter_size[1], padding = (0,0), stride = self.strides)   
+        self.prev_A = DLConv.im2col_indices(prev_A, self.filter_size, padding = (0,0), stride = self.strides)   
         self.max_indexes = np.argmax(self.prev_A,axis=0)
         Z = self.prev_A[self.max_indexes,range(self.max_indexes.size)]
         Z = Z.reshape(self.h_out,self.w_out,m,C).transpose(3,0,1,2)
@@ -869,7 +853,7 @@ class DLMaxpooling ():
         m = dZ.shape[-1]
         C,H,W = self.input_shape
         shape = (m*C,1,H,W)
-        dA_prev = DLConv.col2im_indices(dA_prev, shape, self.filter_size[0], self.filter_size[1], padding=(0,0),stride=self.strides)
+        dA_prev = DLConv.col2im_indices(dA_prev, shape, self.filter_size, padding=(0,0),stride=self.strides)
         dA_prev = dA_prev.reshape(m,C,H,W).transpose(1,2,3,0)
         return dA_prev
 
