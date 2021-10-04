@@ -54,7 +54,6 @@ print("Output with no dropout:")
 print(A_no_dropout)
 
 np.random.seed(2)
-
 l4.set_train(True)
 A_with_dropout = l4.forward_propagation(prev_A)
 print("Input with dropout: (same input as without dropout).")
