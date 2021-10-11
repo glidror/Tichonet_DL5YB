@@ -78,5 +78,5 @@ model.add(hidden2)
 model.add(hidden3)
 model.add(hidden4)
 model.compile("cross_entropy", 0.5)
-run_model(model, 4000,64)
+run_model(model, 4000, 64)
 

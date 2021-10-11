@@ -1,3 +1,7 @@
+# ##############
+# RMS and ADAM #
+# ##############
+
 import numpy as np
 import matplotlib.pyplot as plt
 import math
@@ -112,6 +116,11 @@ class DLModel:
         return logprobs
     def _cross_entropy_backward(self, AL, Y):
         m = AL.shape[1]
+        
+        eps = 1e-10
+        AL = np.where(AL==0,eps,AL)       # to avoid divide by zero
+        AL = np.where(AL == 1, 1-eps,AL)
+
         dAL = np.where(Y == 0, 1/(1-AL), -1/AL) 
         return dAL
 
@@ -149,20 +158,22 @@ class DLModel:
     def forward_propagation(self, X):
         L = len(self.layers)
         for l in range(1,L):
-            X = self.layers[l].forward_propagation(self.layers[l], X)            
+            X = self.layers[l].forward_propagation(X)            
         return X
 
     # -----------------------------------------
     # Backword propagation of the model. 
     # Activate the nuoron-layers backword propagation and update the ANN parameters in each layer, is it goes backword
     # -----------------------------------------
-    def backward_propagation(self, Al, Y):
+    def backward_propagation(self, Al, Y, t):
         L = len(self.layers)
         dAl_t = self.loss_backward(Al, Y)                       # Starts with backwording the los function
         for l in reversed(range(1,L)):                          # Walk the ANN from the end to the begin (backword...)
-            dAl_t = self.layers[l].backward_propagation(self.layers[l], dAl_t)  # Backword
-            self.layers[l].update_parameters()                  # Update parameters
+            dAl_t = self.layers[l].backward_propagation(dAl_t)  # Backword
+            self.layers[l].update_parameters(t)                  # Update parameters
+          
         return dAl_t
+
 
     # =================== Main Train Function ======================
     # Get the X , Y , num_epocs (num of iterations), mini_batch_zise (supports also mini batch algorithm)
@@ -175,6 +186,7 @@ class DLModel:
         for i in range(num_epocs):  # if mini_batch_size is 1 - this is similar to num_of_iterations
             mini_batches = self.random_mini_batches(X, Y, mini_batch_size, seed)
             seed +=1                # inc random seed to difrentiat next random_mini_batches
+            t = 1 # count the number of updates of parameters to implement adam
             
             for minibatch in mini_batches:
                 # must create a mew copy of the input set because it is altered during the train of hte layers
@@ -182,7 +194,8 @@ class DLModel:
                 # forward propagation
                 Al_t = self.forward_propagation (Al_t)
                 #backward propagation and update parameters
-                dAl_t = self.backward_propagation(Al_t, minibatch[1])
+                dAl_t = self.backward_propagation(Al_t, minibatch[1], t)
+                t += 1
 
             # record progress for later printout, and progress printing during long training
             if (num_epocs == 1 or ( i > 0 and i % print_ind == 0)):
@@ -269,48 +282,8 @@ class DLModel:
                 s += f"\n\t{l.name}: {reg_cost}"
         return s
 
-    def check_backward_propagation(self, X, Y, epsilon=1e-4, delta=1e-7):    
-        # forward propagation
-        AL = self.forward_propagation(X)           
-        #backward propagation
-        self.backward_propagation(AL,Y)
-        L = len(self.layers)
-        # check gradients of each layer separatly
-        for main_l in reversed(range(L)):
-            layer = self.layers[main_l]
-            parms_vec = layer.parms_to_vec()
-            if parms_vec is None:
-                continue
-            gradients_vec = layer.gradients_to_vec()
-            n = parms_vec.shape[0]
-            approx = np.zeros((n,))
 
-            for i in range(n):
-                # compute J(parms[i] + delta)
-                parms_plus_delta = np.copy(parms_vec)                
-                parms_plus_delta[i] = parms_plus_delta[i] + delta
-                layer.vec_to_parms(parms_plus_delta)
-                AL = self.forward_propagation(X)   
-                f_plus = self.compute_cost(AL,Y)
-
-                # compute J(parms[i] - delta)
-                parms_minus_delta = np.copy(parms_vec)                
-                parms_minus_delta[i] = parms_minus_delta[i]-delta  
-                layer.vec_to_parms(parms_minus_delta)
-                AL = self.forward_propagation(X)   
-                f_minus = self.compute_cost(AL,Y)
-
-                approx[i] = (f_plus - f_minus)/(2*delta)
-            
-            layer.vec_to_parms(parms_vec)
-            if (np.linalg.norm(gradients_vec) + np.linalg.norm(approx)) > 0:
-                diff = (np.linalg.norm(gradients_vec - approx) ) / ( np.linalg.norm(gradients_vec)+ np.linalg.norm(approx) ) 
-                if diff > epsilon:
-                    return False, diff, main_l
-        return True, diff, L
-
-
-
+ 
 # =============================================================
 # =============================================================
 #              DLLayer
@@ -355,10 +328,17 @@ class DLLayer:
         self.regularization = regularization
         self.is_train = False
 
+
+
         # ----- setting specific parameters for the initialization parameters:
 
         # W and b initialization
         self.init_weights(W_initialization)
+        # set 'adam' optimization related parameters
+        self.adam_v_dW = np.zeros(W.shape)
+        self.adam_v_db = np.zeros(b.shape)
+        self.adam_s_dW = np.zeros(W.shape)  
+        self.adam_s_db = np.zeros(b.shape) 
 
         # optimization parameters
         if self._optimization == 'adaptive':
@@ -366,6 +346,11 @@ class DLLayer:
             self._adaptive_alpha_W = np.full(self._get_W_shape(), self.alpha, dtype=float)
             self.adaptive_cont = 1.1
             self.adaptive_switch = 0.5
+        elif self._optimization == 'adam':
+            self.adam_beta1 = 0.9
+            self.adam_beta2 = 0.999
+            self.adam_epsilon = 1.0e-8
+
  
         # regularization parameser
         self.L2_lambda = 0              # i.e. no L2
@@ -413,14 +398,15 @@ class DLLayer:
     def __str__(self):
         s = self.name + " Layer:\n"
         s += "\tlearning_rate (alpha): " + str(self.alpha) + "\n"
-        s += "\tinput_shape: (" + str(self._input_shape) + ")\n"
+        s += "\tinput_shape: (" + str(*self._input_shape) + ")\n"
         s += "\tnum_units: " + str(self._num_units) + "\n"
         # parameters
-        s += "\tparameters shape:\n"
+        s += "\tparameters:\n"
         s += "\t\t W shape: " + str(self.W.shape)+"\n"
         s += "\t\t b shape: " + str(self.b.shape) + "\n"
+        s += "activation function: " + self._activation + "\n"
         if self._activation == "leaky_relu":
-            s += "\tactivation function - leaky_relu , parameters: \n"
+            s += "\t\tleaky relu parameters:\n"
             s += "\t\t\tleaky_relu_d: " + str(self.leaky_relu_d)+"\n"
         #optimization
         if self._optimization != None:
@@ -431,15 +417,14 @@ class DLLayer:
                 s += "\t\t\tswitch: " + str(self.adaptive_switch)+"\n"
         s += self.regularization_str()
         return s;
-
     def regularization_str(self) :
-        s = "\tregularization: " + str(self.regularization) + "\n"
+        s = "regularization: " + str(self.regularization) + "\n"
         if (self.regularization == "L2"):
-            s += "\t\tL2 Parameters: \n" 
-            s += "\t\t\tlambda: " + str(self.L2_lambda) + "\n"
+            s += "\tL2 Parameters: \n" 
+            s += "\t\tlambda: " + str(self.L2_lambda) + "\n"
         elif (self.regularization == "dropout"):
-            s += "\t\tdropout Parameters: \n"
-            s += "\t\t\tkeep prob: " + str(self.dropout_keep_prob) + "\n"
+            s += "\tdropout Parameters: \n"
+            s += "\t\tkeep prob: " + str(self.dropout_keep_prob) + "\n"
         return s
 
     # Service routinse
@@ -447,11 +432,8 @@ class DLLayer:
         self.is_train = set_parameter_train
         
     # Service routine
-    def _get_W_init_factor(self):
-        return self._input_shape
-
     def _get_W_shape(self):
-        return (self._num_units, *(self._get_W_init_factor()))
+        return (self._num_units, *(self._input_shape))
     
     # We use external set waits to enable re-initiat the Ws when needed.
     def init_weights(self, W_initialization):
@@ -463,9 +445,9 @@ class DLLayer:
             self.random_scale = 0.01   
             self.W = np.random.randn(*self._get_W_shape()) * self.random_scale
         elif W_initialization == "He":
-            self.W = np.random.randn(*self._get_W_shape()) * np.sqrt(2.0/sum(self._get_W_init_factor()))
+            self.W = np.random.randn(*self._get_W_shape()) * np.sqrt(2.0/sum(self._input_shape))
         elif W_initialization == "Xaviar":
-            self.W = np.random.randn(*self._get_W_shape()) * np.sqrt(1.0/sum(self._get_W_init_factor()))
+            self.W = np.random.randn(*self._get_W_shape()) * np.sqrt(1.0/sum(self._input_shape))
         else:   # init by loading values of the Ws and b from external file
             try:
                 with h5py.File(W_initialization, 'r') as hf:
@@ -565,7 +547,7 @@ class DLLayer:
         return dZ
 
     # -----------------------------------------
-    # Forward propagation of the layer. 
+    # Forward and backward propagation of the layer. 
     # -----------------------------------------
     # -----------------------------------------
     
@@ -580,7 +562,6 @@ class DLLayer:
 
 
     # MAIN forward function of the layer. do both - the linear and the logic (activation) phases
-    @staticmethod
     def forward_propagation(self, A_prev):
         self._A_prev = self.forward_dropout(A_prev)
         self._Z = self.W @ self._A_prev + self.b        
@@ -594,13 +575,12 @@ class DLLayer:
         return dA_prev
 
     # MAIN backword function of the layer
-    @staticmethod
     def backward_propagation(self, dA):
         m = self._A_prev.shape[1]
         dZ = self.activation_backward(dA) 
 
-        ##db_m_values = dZ * np.full((1,self._A_prev.shape[1]),1)
-        self.db = (1.0/m) * np.sum(dZ, keepdims=True, axis=1)
+        db_m_values = dZ * np.full((1,self._A_prev.shape[1]),1)
+        self.db = (1.0/m) * np.sum(db_m_values, keepdims=True, axis=1)
 
         self.dW = (1.0/m) * (dZ @ self._A_prev.T) 
         if self.regularization == 'L2':
@@ -612,7 +592,7 @@ class DLLayer:
         return dA_prev
 
     # Update parameters - implement both regular and adaptive 
-    def update_parameters(self):
+    def update_parameters(self, t):
         if self._optimization == 'adaptive':
             self._adaptive_alpha_W *= np.where(self._adaptive_alpha_W * self.dW > 0, self.adaptive_cont, -self.adaptive_switch)
             self._adaptive_alpha_b *= np.where(self._adaptive_alpha_b * self.db > 0, self.adaptive_cont, -self.adaptive_switch)
@@ -640,272 +620,4 @@ class DLLayer:
                 raise ValueError(f"Wrong b shape: {hf['b'][:].shape} and not {self.b.shape}")
             self.b = hf['b'][:]
 
-    def parms_to_vec(self):
-        return np.concatenate((np.reshape(self.W,(-1,)), np.reshape(self.b, (-1,))), axis=0)
-    
-    def vec_to_parms(self, vec):
-        self.W = vec[0:self.W.size].reshape(self.W.shape)
-        self.b = vec[self.W.size:].reshape(self.b.shape)
-    
-    def gradients_to_vec(self):
-        return np.concatenate((np.reshape(self.dW,(-1,)), np.reshape(self.db, (-1,))), axis=0)
-
-
-# =============================================================
-# =============================================================
-#              DLConv
-# =============================================================
-# =============================================================
-# num_units, becomes num_filters
-# output shape is [(n+2*p-f)/s +1]
-# input shape is a 4D matrix (C x W x H x number of samples)
-# filter size is a 2D matrix (most times it will be same - squer)
-# stides is a 2D matrix 
-# padding is a 2D tupple - up-down (both are the same padding) and left-right (both are the same padding)
-# W shape shape is C_out x C_in x F_height x F_width
-
-class DLConv (DLLayer):
-    def __init__(self, name, num_filters, input_shape, filter_size, strides, padding,
-                 activation="relu", W_initialization="random", learning_rate = 0.01, 
-                 optimization=None, regularization = None): 
-        self.num_filters = num_filters
-        self._input_shape = input_shape
-        self.filter_size = filter_size  # size of the convolution filter 
-        self.strides = strides
-        self.padding = padding          # height,width
-        if (padding == 'Same'):         # p = (s*n - s + f + 1)/2
-            self.padding = (int((self.strides[0]*input_shape[1] - self.strides[0] - input_shape[1] +self.filter_size[0] +1)/2),
-                 int((self.strides[1]*input_shape[2] - self.strides[1] - input_shape[2]+self.filter_size[1] +1)/2))
-        elif (padding == 'Valid'):
-            self.padding = (0,0)
-        else:
-            self.padding = padding  # size of padding is given by object creator
-        self.h_out = int((input_shape[1]+2*self.padding[0]-self.filter_size[0])/self.strides[0]) +1
-        self.w_out = int((input_shape[2]+2*self.padding[1]-self.filter_size[1])/self.strides[1]) +1
-
-        DLLayer.__init__(self, name, num_filters, input_shape, activation, 
-                 W_initialization, learning_rate, optimization, 
-                 regularization)
-
-    def __str__(self):
-        s = "Convolutional " + super(DLConv, self).__str__()
-        s += "\tConvolutional parameters:\n"
-        s += f"\t\tfilter size: {self.filter_size}\n"
-        s += f"\t\tstrides: {self.strides}\n"
-        s += f"\t\tpadding: {self.padding}\n"
-        s += f"\t\toutput shape: {(self.num_filters, self.h_out, self.w_out)}\n"
-        return s
-
-
-    def _get_W_shape(self):
-        return ( self.num_filters, self._input_shape[0], self.filter_size[0], self.filter_size[1])
-        
-    def _get_W_init_factor(self):
-        return (self._input_shape[0], self.filter_size[0], self.filter_size[1])
-
-    def im2col_indices(A, filter_size = (3,3), padding=(1,1),stride=(1,1)):
-        """ An implementation of im2col based on some fancy indexing """  
-        # Zero-pad the input
-        A_padded = np.pad(A, ((0, 0), (0, 0), (padding[0], padding[1]), (padding[0], padding[1])), mode='constant', constant_values=(0,0))
-
-        k, i, j = DLConv.get_im2col_indices(A.shape, filter_size, padding, stride)
-
-        cols = A_padded[:, k, i, j]
-        C = A.shape[1]
-        cols = cols.transpose(1, 2, 0).reshape(filter_size[0] * filter_size[1] * C, -1)
-        return cols
-
-    def get_im2col_indices(A_shape, filter_size=(3,3), padding=(1,1),stride=(1,1)):
-        # First figure out what the size of the output should be
-        m, C, H, W = A_shape
-        out_height = int((H + 2 * padding[0] - filter_size[0]) / stride[0]) + 1
-        out_width = int((W + 2 * padding[1] - filter_size[1]) / stride[1]) + 1
-
-        i0 = np.repeat(np.arange(filter_size[0]), filter_size[1])
-        i0 = np.tile(i0, C)
-        i1 = stride[0] * np.repeat(np.arange(out_height), out_width)
-        j0 = np.tile(np.arange(filter_size[1]), filter_size[0] * C)
-        j1 = stride[1] * np.tile(np.arange(out_width), out_height)
-        i = i0.reshape(-1, 1) + i1.reshape(1, -1)
-        j = j0.reshape(-1, 1) + j1.reshape(1, -1)
-
-        k = np.repeat(np.arange(C), filter_size[0] * filter_size[1]).reshape(-1, 1)
-
-        return (k, i, j)
-
-
-    @staticmethod
-    def forward_propagation(self, prev_A):
-        # move the samples dimention (last in our implementation), to be the firs (usualy we mark this size as m)
-        # other three diemntions are C, H, W
-        prev_A = np.transpose(prev_A, (3,0,1,2))
-        prev_A  = DLConv.im2col_indices(prev_A, self.filter_size, self.padding, self.strides)
-
-        SaveW = self.W
-        self.W = self.W.reshape(self.num_filters, -1)   # Set W to match the dimentions of prev_A
-        A = DLLayer.forward_propagation(self, prev_A)   # now we can use the regular forward propegatino of the layer
-        A = A.reshape(self.num_filters, self.h_out, self.w_out, -1) # replace back the result shape
-
-        self.W = SaveW
-        return A
-
-
-    @staticmethod
-    def col2im_indices(cols, A_shape, filter_size=(3,3), padding=(1,1),stride=(1,1)):
-        """ An implementation of col2im based on fancy indexing and np.add.at """
-        m, C, H, W = A_shape
-        H_padded, W_padded = H + 2 * padding[0], W + 2 * padding[1]
-        A_padded = np.zeros((m, C, H_padded, W_padded), dtype=cols.dtype)
-        k, i, j = DLConv.get_im2col_indices(A_shape, filter_size, padding, stride)
-        cols_reshaped = cols.reshape(C * filter_size[0] * filter_size[1], -1, m)
-        cols_reshaped = cols_reshaped.transpose(2, 0, 1)
-        np.add.at(A_padded, (slice(None), k, i, j), cols_reshaped)
-        if padding[0] == 0 and padding[1] == 0:
-            return A_padded
-        if padding[0] == 0:
-            return A_padded[:, :, :, padding[1]:-padding[1]]
-        if padding[1] == 0:
-            return A_padded[:, :, padding[0]:-padding[0], :]
-        return A_padded[:, :, padding[0]:-padding[0], padding[1]:-padding[1]]
-
-
-    @staticmethod
-    def backward_propagation(self, dA):
-        m = dA.shape[-1]
-        SaveW = self.W
-
-        dA = dA.reshape(self.num_filters, -1)
-        self.W = self.W.reshape(self.num_filters, -1)
-
-        dA_Prev = DLLayer.backward_propagation(self, dA)   # now we can use the regular backword propegatino of the layer
-
-        self.W = SaveW
-        self.dW  =self.dW.reshape(self.W.shape)
-
-        #  m, C, H, W
-        prev_A_shape = (m, *self._input_shape)
-        dA_Prev = DLConv.col2im_indices(dA_Prev, prev_A_shape, self.filter_size, self.padding, self.strides)
-
-        # transpose dA-prev from (m,C,H,W) to (C,H,W,m)
-        dA_Prev = dA_Prev.transpose(1,2,3,0)
-        return dA_Prev
-
-    def parms_to_vec(self):
-        return np.concatenate((np.reshape(self.W,(-1,)), np.reshape(self.b, (-1,))), axis=0)
-    
-    def vec_to_parms(self, vec):
-        self.W = vec[0:self.W.size].reshape(self.W.shape)
-        self.b = vec[self.W.size:].reshape(self.b.shape)
-    
-    def gradients_to_vec(self):
-        return np.concatenate((np.reshape(self.dW,(-1,)), np.reshape(self.db, (-1,))), axis=0)
-
-    def regularization_cost(self, m):
-        return 0
-
-
-# =============================================================
-# =============================================================
-#              MaxPooling
-# =============================================================
-# =============================================================
-class DLMaxpooling ():
-    def __init__(self, name, input_shape, filter_size, strides):
-        self.name = name
-        self.input_shape = input_shape
-        self.filter_size = filter_size
-        self.strides = strides
-        # No Padding
-        self.h_out = int((input_shape[1]-self.filter_size[0])/self.strides[0]) +1 
-        self.w_out = int((input_shape[2]-self.filter_size[1])/self.strides[1]) +1
-
-    def __str__(self):
-        s = f"Maxpooling {self.name} Layer:\n"
-        s += f"\tinput_shape: {self.input_shape}\n"
-        s += "\tMaxpooling parameters:\n"
-        s += f"\t\tfilter size: {self.filter_size}\n"
-        s += f"\t\tstrides: {self.strides}\n"
-        # number of output channels == number of input channels
-        s += f"\t\toutput shape: {(self.input_shape[0], self.h_out, self.w_out)}\n"
-        return s
-
-    @staticmethod
-    def forward_propagation(self, prev_A):
-        # first transpose A_prev from (C,H,W,m) to (m,C,H,W)
-        prev_A = prev_A.transpose(3, 0, 1, 2)
-        m,C,H,W = prev_A.shape
-        prev_A = prev_A.reshape(m*C,1,H,W)
-        self.prev_A = DLConv.im2col_indices(prev_A, self.filter_size, padding = (0,0), stride = self.strides)   
-        self.max_indexes = np.argmax(self.prev_A,axis=0)
-        Z = self.prev_A[self.max_indexes,range(self.max_indexes.size)]
-        Z = Z.reshape(self.h_out,self.w_out,m,C).transpose(3,0,1,2)
-        return Z
-
-
-    @staticmethod
-    def backward_propagation(self,dZ):
-        dA_prev = np.zeros_like(self.prev_A) 
-        # transpose dZ from C,h,W,C to H,W,m,c and flatten it
-        # Then, insert dZ values to dA_prev in the places of the max indexes
-        dZ_flat = dZ.transpose(1,2,3,0).ravel()
-        dA_prev[self.max_indexes,range(self.max_indexes.size)] = dZ_flat       
-        # get the original prev_A structure from col2im
-        m = dZ.shape[-1]
-        C,H,W = self.input_shape
-        shape = (m*C,1,H,W)
-        dA_prev = DLConv.col2im_indices(dA_prev, shape, self.filter_size, padding=(0,0),stride=self.strides)
-        dA_prev = dA_prev.reshape(m,C,H,W).transpose(1,2,3,0)
-        return dA_prev
-
-    def update_parameters(self):
-        pass
-
-    def parms_to_vec(self):
-        pass
-    
-    def vec_to_parms(self, vec):
-        pass
-    
-    def gradients_to_vec(self):
-        pass
-
-    def regularization_cost(self, m):
-        return 0
-
-# =============================================================
-# =============================================================
-#              DLFlatten
-# =============================================================
-# =============================================================
-class DLFlatten():
-    def __init__(self, name, input_shape): 
-        self.input_shape = input_shape
-        self.name = name
-
-    def __str__(self):
-        s = f"Flatten {self.name} Layer:\n"
-        s += f"\tinput_shape: {self.input_shape}\n"
-        return s
-    @staticmethod
-    def forward_propagation(self, prev_A):
-        m = prev_A.shape[-1]
-        A = np.copy(prev_A.reshape(-1,m))
-        return A
-    @staticmethod
-    def backward_propagation(self,dA):
-        m = dA.shape[-1]
-        dA_prev = np.copy(dA.reshape(*(self.input_shape),m))
-        return dA_prev
-    def update_parameters(self):
-        pass
-
-    def parms_to_vec(self):
-        pass
-    
-    def vec_to_parms(self, vec):
-        pass
-    
-    def gradients_to_vec(self):
-        pass
-    def regularization_cost(self, m):
-        return 0
+   

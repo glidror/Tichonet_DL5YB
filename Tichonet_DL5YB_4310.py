@@ -1,7 +1,10 @@
+
+
+
 import numpy as np
 import h5py
 import matplotlib.pyplot as plt
-from DL6 import *
+from DL8 import *
 
 plt.rcParams['figure.figsize'] = (5.0, 4.0) # set default size of plots
 plt.rcParams['image.interpolation'] = 'nearest'
@@ -49,10 +52,9 @@ print ("Targil 4310 Ex. 3 - backword propegation")
 print ("------------------------------------------------------------------")
 np.random.seed(1)
 prev_A = np.random.randn(3,4,4,10)
-test = DLConv("test backword", 8 ,(3,4,4), filter_size=(2,2), strides=(2,2), padding=(2,2),learning_rate = 0.1,  optimization='adaptive', regularization="L2")
+test = DLConv("test backword", 8 ,(3,4,4), filter_size=(2,2), strides=(2,2), padding=(2,2))
 A = test.forward_propagation(test, prev_A)
 
-np.random.seed(1)
 dA = A * np.random.randn(8,4,4,10)
 dA_prev = test.backward_propagation(test, dA)
 print("dA_prev's mean =", np.mean(dA_prev))
