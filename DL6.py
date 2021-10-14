@@ -151,6 +151,13 @@ class DLModel:
         J = (1/m)*np.sum(errors) + self.regularization_cost(m)
         return J
 
+    def init_adam(self):
+        L = len(self.layers)
+        for l in range(1,L):
+            X = self.layers[l].init_adam()
+        return X
+
+
     # -----------------------------------------
     # Forward propagation of the model. Will be used in train and in predict phases
     # Activate the nuoron-layers that are part of this model' one after the other
@@ -183,11 +190,13 @@ class DLModel:
         print_ind = max(num_epocs // 100, 1)
         costs = []      # used to agregate costs during train, for later display
         seed = 10        # start random seed for the minibatch random permutations
+
         for i in range(num_epocs):  # if mini_batch_size is 1 - this is similar to num_of_iterations
             mini_batches = self.random_mini_batches(X, Y, mini_batch_size, seed)
             seed +=1                # inc random seed to difrentiat next random_mini_batches
             t = 1 # count the number of updates of parameters to implement adam
-            
+            #self.init_adam()
+
             for minibatch in mini_batches:
                 # must create a mew copy of the input set because it is altered during the train of hte layers
                 Al_t = np.array(minibatch[0], copy=True)  
@@ -328,17 +337,10 @@ class DLLayer:
         self.regularization = regularization
         self.is_train = False
 
-
-
-        # ----- setting specific parameters for the initialization parameters:
+         # ----- setting specific parameters for the initialization parameters:
 
         # W and b initialization
         self.init_weights(W_initialization)
-        # set 'adam' optimization related parameters
-        self.adam_v_dW = np.zeros(W.shape)
-        self.adam_v_db = np.zeros(b.shape)
-        self.adam_s_dW = np.zeros(W.shape)  
-        self.adam_s_db = np.zeros(b.shape) 
 
         # optimization parameters
         if self._optimization == 'adaptive':
@@ -346,12 +348,13 @@ class DLLayer:
             self._adaptive_alpha_W = np.full(self._get_W_shape(), self.alpha, dtype=float)
             self.adaptive_cont = 1.1
             self.adaptive_switch = 0.5
+        # set 'adam' optimization related parameters
         elif self._optimization == 'adam':
             self.adam_beta1 = 0.9
             self.adam_beta2 = 0.999
-            self.adam_epsilon = 1.0e-8
+            self.adam_epsilon = 1e-8
+            self.init_adam()
 
- 
         # regularization parameser
         self.L2_lambda = 0              # i.e. no L2
         self.dropout_keep_prob = 1      # i.e. no dropout
@@ -415,6 +418,11 @@ class DLLayer:
                 s += "\t\tadaptive parameters:\n"
                 s += "\t\t\tcont: " + str(self.adaptive_cont)+"\n"
                 s += "\t\t\tswitch: " + str(self.adaptive_switch)+"\n"
+            elif(self._optimization == "adam"):
+                s += "\t\tadam parameters:\n"
+                s += "\t\t\tbeta1: " + str(self.adam_beta1)+"\n"
+                s += "\t\t\tbeta2: " + str(self.adam_beta2)+"\n"
+                s += "\t\t\tadam epsilon: " + str(self.adam_epsilon)+"\n"
         s += self.regularization_str()
         return s;
     def regularization_str(self) :
@@ -455,6 +463,14 @@ class DLLayer:
                     self.b = hf['b'][:]
             except (FileNotFoundError):
                 raise NotImplementedError("Unrecognized initialization:", W_initialization)
+
+
+    def init_adam(self):
+        if(self._optimization == "adam"):
+            self.adam_v_dW = np.zeros(self.W.shape)
+            self.adam_v_db = np.zeros(self.b.shape)
+            self.adam_s_dW = np.zeros(self.W.shape)
+            self.adam_s_db = np.zeros(self.b.shape)
 
     # add the regularization values to the cost
     def regularization_cost(self, m):
@@ -597,7 +613,23 @@ class DLLayer:
             self._adaptive_alpha_W *= np.where(self._adaptive_alpha_W * self.dW > 0, self.adaptive_cont, -self.adaptive_switch)
             self._adaptive_alpha_b *= np.where(self._adaptive_alpha_b * self.db > 0, self.adaptive_cont, -self.adaptive_switch)
             self.W -= self._adaptive_alpha_W                               
-            self.b -= self._adaptive_alpha_b 
+            self.b -= self._adaptive_alpha_b
+        elif self._optimization == 'adam':
+            # Momentum
+            self.adam_v_dW = self.adam_beta1*self.adam_v_dW + (1-self.adam_beta1)*self.dW
+            self.adam_v_db = self.adam_beta1*self.adam_v_db + (1-self.adam_beta1)*self.db
+            adjust_start_factor_beta1 = (1-math.pow(self.adam_beta1,t))
+            adam_v_dW_a = self.adam_v_dW/adjust_start_factor_beta1
+            adam_v_db_a = self.adam_v_db/adjust_start_factor_beta1
+            # RMS
+            self.adam_s_dW = self.adam_beta2*self.adam_s_dW + (1-self.adam_beta2)*(self.dW**2)
+            self.adam_s_db = self.adam_beta2*self.adam_s_db + (1-self.adam_beta2)*(self.db**2)
+            adjust_start_factor_beta2 = (1-math.pow(self.adam_beta2,t))
+            adam_s_dW_a = self.adam_s_dW/adjust_start_factor_beta2
+            adam_s_db_a = self.adam_s_db/adjust_start_factor_beta2
+
+            self.W -= self.alpha*adam_v_dW_a/np.sqrt(adam_s_dW_a + self.adam_epsilon)
+            self.b -= self.alpha*adam_v_db_a/np.sqrt(adam_s_db_a + self.adam_epsilon)
         else:
             self.W -= self.alpha * self.dW                               
             self.b -= self.alpha * self.db
