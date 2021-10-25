@@ -450,17 +450,16 @@ class DLLayer:
     def set_train(self, set_parameter_train):
         self.is_train = set_parameter_train
         
-    # Service routine
+    # Service routine - DLLayer
+    def _get_W_shape(self):
+        return (self._num_units, *self._input_shape)
     def _get_W_init_factor(self):
         return np.sum(self._input_shape)
 
-    def _get_W_shape(self):
-        return (self._num_units, *self._input_shape)
     
     # We use external set waits to enable re-initiat the Ws when needed.
     def init_weights(self, W_initialization):
         self.b = np.zeros((self._num_units,1), dtype=float)
-
         if W_initialization == "zeros":
             self.W = np.full(*self._get_W_shape(), self.alpha)
         elif W_initialization == "random":
@@ -710,9 +709,9 @@ class DLConv (DLLayer):
         return s
 
 
+    # Service routines - DLConv
     def _get_W_shape(self):
         return ( self._num_units, self._input_shape[0], self.filter_size[0], self.filter_size[1])
-        
     def _get_W_init_factor(self):
         return (self._input_shape[0] * self.filter_size[0] * self.filter_size[1])
 
