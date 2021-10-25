@@ -452,10 +452,10 @@ class DLLayer:
         
     # Service routine
     def _get_W_init_factor(self):
-        return self._input_shape
+        return np.sum(self._input_shape)
 
     def _get_W_shape(self):
-        return (self._num_units, *(self._get_W_init_factor()))
+        return (self._num_units, *self._input_shape)
     
     # We use external set waits to enable re-initiat the Ws when needed.
     def init_weights(self, W_initialization):
@@ -467,9 +467,9 @@ class DLLayer:
             self.random_scale = 0.01   
             self.W = np.random.randn(*self._get_W_shape()) * self.random_scale
         elif W_initialization == "He":
-            self.W = np.random.randn(*self._get_W_shape()) * np.sqrt(2.0/sum(self._get_W_init_factor()))
+            self.W = np.random.randn(*self._get_W_shape()) * np.sqrt(2.0/self._get_W_init_factor())
         elif W_initialization == "Xaviar":
-            self.W = np.random.randn(*self._get_W_shape()) * np.sqrt(1.0/sum(self._get_W_init_factor()))
+            self.W = np.random.randn(*self._get_W_shape()) * np.sqrt(1.0/self._get_W_init_factor())
         else:   # init by loading values of the Ws and b from external file
             try:
                 with h5py.File(W_initialization, 'r') as hf:
@@ -672,20 +672,29 @@ class DLConv (DLLayer):
     def __init__(self, name, num_filters, input_shape, filter_size, strides, padding,
                  activation="relu", W_initialization="random", learning_rate = 0.01, 
                  optimization=None, regularization = None): 
-        self.num_filters = num_filters
-        self._input_shape = input_shape
         self.filter_size = filter_size  # size of the convolution filter 
         self.strides = strides
+        #self.num_filters = num_filters
+        #self._input_shape = input_shape
         self.padding = padding          # height,width
         if (padding == 'Same'):         # p = (s*n - s + f + 1)/2
-            self.padding = (int((self.strides[0]*input_shape[1] - self.strides[0] - input_shape[1] +self.filter_size[0] +1)/2),
-                 int((self.strides[1]*input_shape[2] - self.strides[1] - input_shape[2]+self.filter_size[1] +1)/2))
+            n_H = input_shape[1]
+            n_W = input_shape[2]
+            pad_H = (strides[0]*n_H-strides[0]-n_H+filter_size[0]+1)//2
+            pad_W = (strides[1]*n_W-strides[1]-n_W+filter_size[1]+1)//2
+            self.padding = (pad_H,pad_W)
+
+            #self.padding = (int((self.strides[0]*input_shape[1] - self.strides[0] - input_shape[1] +self.filter_size[0] +1)/2),
+            #     int((self.strides[1]*input_shape[2] - self.strides[1] - input_shape[2]+self.filter_size[1] +1)/2))
         elif (padding == 'Valid'):
             self.padding = (0,0)
         else:
             self.padding = padding  # size of padding is given by object creator
         self.h_out = int((input_shape[1]+2*self.padding[0]-self.filter_size[0])/self.strides[0]) +1
         self.w_out = int((input_shape[2]+2*self.padding[1]-self.filter_size[1])/self.strides[1]) +1
+
+        #h_out = (input_shape[1] + 2 * self.padding[0] - self.filter_size[0] ) / self.strides[0] + 1
+        #w_out = (input_shape[2] + 2 * self.padding[1] - self.filter_size[1] ) / self.strides[1] + 1
 
         DLLayer.__init__(self, name, num_filters, input_shape, activation, 
                  W_initialization, learning_rate, optimization, 
@@ -697,15 +706,15 @@ class DLConv (DLLayer):
         s += f"\t\tfilter size: {self.filter_size}\n"
         s += f"\t\tstrides: {self.strides}\n"
         s += f"\t\tpadding: {self.padding}\n"
-        s += f"\t\toutput shape: {(self.num_filters, self.h_out, self.w_out)}\n"
+        s += f"\t\toutput shape: {(self._num_units, self.h_out, self.w_out)}\n"
         return s
 
 
     def _get_W_shape(self):
-        return ( self.num_filters, self._input_shape[0], self.filter_size[0], self.filter_size[1])
+        return ( self._num_units, self._input_shape[0], self.filter_size[0], self.filter_size[1])
         
     def _get_W_init_factor(self):
-        return (self._input_shape[0]* self.filter_size[0]* self.filter_size[1])
+        return (self._input_shape[0] * self.filter_size[0] * self.filter_size[1])
 
     def im2col_indices(A, filter_size = (3,3), padding=(1,1),stride=(1,1)):
         """ An implementation of im2col based on some fancy indexing """  
@@ -746,9 +755,9 @@ class DLConv (DLLayer):
         prev_A  = DLConv.im2col_indices(prev_A, self.filter_size, self.padding, self.strides)
 
         SaveW = self.W
-        self.W = self.W.reshape(self.num_filters, -1)   # Set W to match the dimentions of prev_A
+        self.W = self.W.reshape(self._num_units, -1)   # Set W to match the dimentions of prev_A
         A = DLLayer.forward_propagation(self, prev_A)   # now we can use the regular forward propegatino of the layer
-        A = A.reshape(self.num_filters, self.h_out, self.w_out, -1) # replace back the result shape
+        A = A.reshape(self._num_units, self.h_out, self.w_out, -1) # replace back the result shape
 
         self.W = SaveW
         return A
@@ -781,8 +790,8 @@ class DLConv (DLLayer):
         m = dA.shape[-1]
         SaveW = self.W
 
-        dA = dA.reshape(self.num_filters, -1)
-        self.W = self.W.reshape(self.num_filters, -1)
+        dA = dA.reshape(self._num_units, -1)
+        self.W = self.W.reshape(self._num_units, -1)
 
         dA_Prev = super().backward_propagation(self, dA)   # now we can use the regular backword propegatino of the layer
 

@@ -172,11 +172,11 @@ class DLModel:
     # Backword propagation of the model. 
     # Activate the nuoron-layers backword propagation and update the ANN parameters in each layer, is it goes backword
     # -----------------------------------------
-    def backward_propagation(self, Al, Y, t):
+    def backword_propagation(self, Al, Y, t):
         L = len(self.layers)
         dAl_t = self.loss_backward(Al, Y)                       # Starts with backwording the los function
         for l in reversed(range(1,L)):                          # Walk the ANN from the end to the begin (backword...)
-            dAl_t = self.layers[l].backward_propagation(dAl_t)  # Backword
+            dAl_t = self.layers[l].backword_propagation(dAl_t)  # Backword
             self.layers[l].update_parameters(t)                  # Update parameters
           
         return dAl_t
@@ -203,7 +203,7 @@ class DLModel:
                 # forward propagation
                 Al_t = self.forward_propagation (Al_t)
                 #backward propagation and update parameters
-                dAl_t = self.backward_propagation(Al_t, minibatch[1], t)
+                dAl_t = self.backword_propagation(Al_t, minibatch[1], t)
                 t += 1
 
             # record progress for later printout, and progress printing during long training
@@ -591,17 +591,17 @@ class DLLayer:
         return dA_prev
 
     # MAIN backword function of the layer
-    def backward_propagation(self, dA):
+    def backword_propagation(self, dA):
         m = self._A_prev.shape[1]
         dZ = self.activation_backward(dA) 
 
         db_m_values = dZ * np.full((1,self._A_prev.shape[1]),1)
         self.db = (1.0/m) * np.sum(db_m_values, keepdims=True, axis=1)
-
         self.dW = (1.0/m) * (dZ @ self._A_prev.T) 
+
         if self.regularization == 'L2':
-            m1 = dZ.shape[-1]
-            self.dW += (self.L2_lambda/m1) * self.W
+            #m1 = dZ.shape[-1]
+            self.dW += (self.L2_lambda/m) * self.W
         dA_prev = self.W.T @ dZ
         if (self.regularization == "dropout"):
             dA_prev = self.backward_dropout(dA_prev)
@@ -618,16 +618,20 @@ class DLLayer:
             # Momentum
             self.adam_v_dW = self.adam_beta1*self.adam_v_dW + (1-self.adam_beta1)*self.dW
             self.adam_v_db = self.adam_beta1*self.adam_v_db + (1-self.adam_beta1)*self.db
-            adjust_start_factor_beta1 = (1-math.pow(self.adam_beta1,t))
+            # repair bias of start sequence
+            adjust_start_factor_beta1 = 1-math.pow(self.adam_beta1,t)
             adam_v_dW_a = self.adam_v_dW/adjust_start_factor_beta1
             adam_v_db_a = self.adam_v_db/adjust_start_factor_beta1
+            
             # RMS
             self.adam_s_dW = self.adam_beta2*self.adam_s_dW + (1-self.adam_beta2)*(self.dW**2)
             self.adam_s_db = self.adam_beta2*self.adam_s_db + (1-self.adam_beta2)*(self.db**2)
-            adjust_start_factor_beta2 = (1-math.pow(self.adam_beta2,t))
+            # repair bias of start sequence
+            adjust_start_factor_beta2 = 1-math.pow(self.adam_beta2,t)
             adam_s_dW_a = self.adam_s_dW/adjust_start_factor_beta2
             adam_s_db_a = self.adam_s_db/adjust_start_factor_beta2
 
+            # update parameters 
             self.W -= self.alpha*adam_v_dW_a/np.sqrt(adam_s_dW_a + self.adam_epsilon)
             self.b -= self.alpha*adam_v_db_a/np.sqrt(adam_s_db_a + self.adam_epsilon)
         else:
