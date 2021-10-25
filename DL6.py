@@ -193,7 +193,7 @@ class DLModel:
 
         for i in range(num_epocs):  # if mini_batch_size is 1 - this is similar to num_of_iterations
             mini_batches = self.random_mini_batches(X, Y, mini_batch_size, seed)
-            seed +=1                # inc random seed to difrentiat next random_mini_batches
+            seed += 1                # inc random seed to difrentiat next random_mini_batches
             t = 1 # count the number of updates of parameters to implement adam
             #self.init_adam()
 
