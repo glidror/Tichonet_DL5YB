@@ -20,15 +20,12 @@ linear = DLLayer("line",2,(3,),activation = 'NoActivation', W_initialization="Xa
 linear.init_weights("Xaviar")  # Do the Xaviar twice...
 print(linear)
 print(linear.W)
-
 convValid = DLConv("Valid", 3, (3,15,20), filter_size=(3,3), strides=(1,2), W_initialization = "He",
                    padding="Valid", learning_rate = 0.01)
 print(convValid)
-
 convSame = DLConv("Same", 2,(3,30,64), filter_size=(5,5), strides=(1,1),  W_initialization = "He",
                    padding="Same", learning_rate = 0.1,  optimization='adaptive', regularization="L2")
 print(convSame)
-
 conv34 = DLConv("34", 2,(3,28,28), filter_size=(2,2), strides=(1,1), W_initialization = "He", 
                    padding=(3,4), learning_rate = 0.07,  optimization='adaptive', regularization="L2")
 print(conv34)
@@ -58,7 +55,6 @@ np.random.seed(1)
 prev_A = np.random.randn(3,4,4,10)
 test = DLConv("test backword", 8 ,(3,4,4), filter_size=(2,2), strides=(2,2), padding=(2,2), W_initialization = "He")
 A = test.forward_propagation(test, prev_A)
-
 dA = A * np.random.randn(8,4,4,10)
 dA_prev = test.backward_propagation(test, dA)
 print("dA_prev's mean =", np.mean(dA_prev))
