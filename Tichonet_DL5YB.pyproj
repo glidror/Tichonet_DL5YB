@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>348bde95-e5b2-4ac0-9765-d1143c15ac6b</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>Tichonet_DL5YB_4310.py</StartupFile>
+    <StartupFile>ttt.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -35,6 +35,7 @@
     <Compile Include="Tichonet_DL5YB_4110.py" />
     <Compile Include="Tichonet_DL5YB_4310.py" />
     <Compile Include="Tichonet_DL5YB_6010.py" />
+    <Compile Include="ttt.py" />
     <Compile Include="unit10\c4w3_yolo3_utils.py" />
     <Compile Include="unit10\c4w4_facenet_utils.py" />
     <Compile Include="unit10\c4w4_style_transfer_utils.py" />
