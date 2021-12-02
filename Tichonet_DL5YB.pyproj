@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>348bde95-e5b2-4ac0-9765-d1143c15ac6b</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>Tichonet_DL5_P_3190_1.py</StartupFile>
+    <StartupFile>Tichonet_DL5YB_4310.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -26,41 +26,15 @@
     <Compile Include="DL6.py" />
     <Compile Include="DL5.py" />
     <Compile Include="DL4.py" />
-    <Compile Include="DL3.py" />
-    <Compile Include="DL1.py">
-      <SubType>Code</SubType>
-    </Compile>
+    <Compile Include="DL7.py" />
+    <Compile Include="DL8.py" />
     <Compile Include="DL9.py" />
-    <Compile Include="Ehud_03.py" />
-    <Compile Include="Ehud_02.py" />
-    <Compile Include="MyVector.py" />
-    <Compile Include="MyPerceptron.py" />
-    <Compile Include="Tichonet_DL5_P_3030_Ex0.py" />
-    <Compile Include="Tichonet_DL5_P_3150_Ex2.py" />
-    <Compile Include="Tichonet_DL5_P_3150_Ex3.py" />
-    <Compile Include="Ehud_01.py" />
-    <Compile Include="Tichonet_DL5_P_3190_2.py" />
-    <Compile Include="Tichonet_DL5_P_3190_1.py" />
-    <Compile Include="Tichonet_DL5_P_3170_2.py" />
-    <Compile Include="Tichonet_DL5_P_3170_1.py" />
-    <Compile Include="Tichonet_DL5_P_3150_Ex1.py" />
-    <Compile Include="Tichonet_DL5_P_3140_Ex1.py" />
-    <Compile Include="Tichonet_DL5_P_3130_Ex2.py" />
-    <Compile Include="Tichonet_DL5_P_3130_Ex1.py" />
-    <Compile Include="Tichonet_DL5_P_3120_Ex2.py" />
-    <Compile Include="Tichonet_DL5_P_3120_Ex1.py" />
-    <Compile Include="Tichonet_DL5_P_3040_Ex5.py" />
-    <Compile Include="Tichonet_DL5_P_3040_Ex4.py" />
-    <Compile Include="Tichonet_DL5_P_3040_Ex3.py" />
-    <Compile Include="Tichonet_DL5_P_3040_Ex2.py" />
-    <Compile Include="Tichonet_DL5_P_3040_Ex0.py" />
-    <Compile Include="Tichonet_DL5_P_3030_Ex6.py" />
-    <Compile Include="Tichonet_DL5_P_3030_Ex5.py" />
-    <Compile Include="Tichonet_DL5_P_3030_Ex4.py" />
-    <Compile Include="Tichonet_DL5_P_3030_Ex3.py" />
-    <Compile Include="Tichonet_DL5_P_3030_Ex2.py" />
-    <Compile Include="Tichonet_DL5_P_3030_MyVector.py" />
-    <Compile Include="Tichonet_DL5_P_3030_Ex1.py" />
+    <Compile Include="module1.py" />
+    <Compile Include="Tichonet_DL5YB_4010.py" />
+    <Compile Include="Tichonet_DL5YB_4060.py" />
+    <Compile Include="Tichonet_DL5YB_4110.py" />
+    <Compile Include="Tichonet_DL5YB_4310.py" />
+    <Compile Include="Tichonet_DL5YB_6010.py" />
     <Compile Include="unit10\c4w3_yolo3_utils.py" />
     <Compile Include="unit10\c4w4_facenet_utils.py" />
     <Compile Include="unit10\c4w4_style_transfer_utils.py" />
