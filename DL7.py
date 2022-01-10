@@ -1,6 +1,6 @@
-# ##############
-# Convolutions #
-# ##############
+# #############
+# Convolution #
+# #############
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -40,7 +40,7 @@ import h5py
 class DLModel:
     def __init__(self, name="Model"): 
         self.name = name
-        self.layers = [None]
+        self.layers = []
         self._is_compiled = False
         self.inject_str_func = None
         self.is_train = False
@@ -71,9 +71,9 @@ class DLModel:
             self.layers[i].save_weights(path,"Layer"+str(i))
     
     def restore_parameters(self, directory_path):
-        directory = directory_path+"/"+self.name
+        directory = directory_path+"\\"+self.name
         for l in self.layers:
-            l.restore_parameters(directory)
+            l.restore_weights(directory)
 
     # compile - set the loss function of choice for the model and set its parameters 
     # -------
@@ -817,6 +817,16 @@ class DLConv (DLLayer):
 
     def regularization_cost(self, m):
         return 0
+    
+    def restore_weights(self, file_path):
+        with h5py.File(file_path+"/"+self.name+'.h5', 'r') as hf:
+            if self.W.shape != hf['W'][:].shape:
+                raise ValueError(f"Wrong W shape: {hf['W'][:].shape} and not {self.W.shape}")
+            self.W = hf['W'][:]
+            if self.b.shape != hf['b'][:].shape:
+                raise ValueError(f"Wrong b shape: {hf['b'][:].shape} and not {self.b.shape}")
+            self.b = hf['b'][:]
+
 
 
 # =============================================================
@@ -887,6 +897,10 @@ class DLMaxpooling ():
     def regularization_cost(self, m):
         return 0
 
+    def restore_weights(self, file_path): #No parameters q weights in pooling
+        pass
+    
+    
 # =============================================================
 # =============================================================
 #              DLFlatten
@@ -901,16 +915,19 @@ class DLFlatten():
         s = f"Flatten {self.name} Layer:\n"
         s += f"\tinput_shape: {self.input_shape}\n"
         return s
+
     @staticmethod
     def forward_propagation(self, prev_A):
         m = prev_A.shape[-1]
         A = np.copy(prev_A.reshape(-1,m))
         return A
+
     @staticmethod
     def backward_propagation(self,dA):
         m = dA.shape[-1]
         dA_prev = np.copy(dA.reshape(*(self.input_shape),m))
         return dA_prev
+
     def update_parameters(self):
         pass
 
@@ -924,3 +941,5 @@ class DLFlatten():
         pass
     def regularization_cost(self, m):
         return 0
+    def restore_weights(self, file_path): #No parameters q weights in pooling
+        pass

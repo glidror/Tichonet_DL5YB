@@ -1,6 +1,7 @@
-# #######
-# YOLO3 #
-# #######
+# ########
+# ResNet #
+# ########
+
 
 import numpy as np
 import matplotlib.pyplot as plt
